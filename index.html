@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenFare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="Picture2.png">
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --lime: #FFC626;
+            --blob: #121212;
+            --cream: #FDFCE8;
+            --dark: #121212;
+            --white: #ffffff;
+            --text-muted: #555;
+            --sidebar-width: 80px;
+            --card-bg: #ffffff;
+            --nav-bg: #ffffff;
+            --border: #e0e0e0;
+        }
+
+        /* --- Dark Mode Variables --- */
+        [data-theme="dark"] {
+            --blob: #FFC626;
+            --cream: #1a1a1a;
+            --dark: #ffffff;
+            --white: #121212;
+            --text-muted: #aaa;
+            --card-bg: #252525;
+            --nav-bg: #121212;
+            --border: #444;
+        }
+
+        /* Change hero image in dark mode */
+        [data-theme="dark"] .hero-image img {
+            content: url('darkcar.png');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Disable universal transitions for properties handled by the clip overlay to prevent stuttering */
+        body.transitioning * {
+            transition: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--lime);
+            border-radius: 20px;
+            border: 2px solid var(--cream);
+        }
+
+        ::selection {
+            background-color: var(--lime);
+            /* Background color (Lime) */
+            color: #121212;
+            /* Text color (Dark) */
+        }
+
+        /* For Firefox compatibility */
+        ::-moz-selection {
+            background-color: var(--lime);
+            color: #121212;
+        }
+
+        body {
+            background-color: var(--cream);
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            /* Smooth scrolling animation */
+        }
+
+        /* --- Left Sidebar Navigation --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #121212;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 0;
+            z-index: 2000;
+        }
+
+        .sidebar-top-icons,
+        .sidebar-bottom-icons {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            color: #ffffff;
+            font-size: 1.3rem;
+        }
+
+        .side-icon {
+            cursor: pointer;
+            transition: color 0.3s;
+            color: #888;
+            position: relative;
+            /* Added for tooltip positioning */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            /* Prevents anchor underlining */
+            transition: all 0.3s ease;
+        }
+
+        /* --- NEW: Sidebar Hover Placeholders (Tooltips) --- */
+        .sidebar-label {
+            position: absolute;
+            left: 60px;
+            background: var(--lime);
+            color: #121212;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            transform: translateX(-10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .side-icon:hover .sidebar-label {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Triangle pointer for label */
+        .sidebar-label::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 6px solid var(--lime);
+        }
+
+        .side-icon:hover {
+            color: var(--lime);
+        }
+
+        .side-icon.active {
+            color: var(--lime);
+        }
+
+        /* Added purely for explicit user clicks */
+        .side-icon.clicked {
+            animation: pulse 1s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.9);
+            }
+
+            80% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .main-wrapper button a {
+            text-decoration: none;
+            color: inherit;
+            font-weight: 700;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: transparent;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+
+        .logo span {
+            color: var(--lime);
+        }
+
+        .btn-app {
+            background: var(--lime);
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            padding: 55px 8% 50px;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .hero-text {
+            flex: 1;
+        }
+
+        .hero-text button a {
+            text-decoration: none;
+            color: inherit;
+            font-weight: 700;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .hero-text p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: var(--text-muted);
+            max-width: 500px;
+        }
+
+        .hero-image {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 30px;
+        }
+
+        .blob-main {
+            position: absolute;
+            margin-bottom: 50px;
+            width: 450px;
+            height: 450px;
+            background: var(--blob);
+            border-radius: 60% 40% 60% 45%;
+            z-index: -2;
+            opacity: 0.9;
+        }
+
+        .highlight {
+            background-color: var(--lime);
+            padding: 0 8px;
+            color: #121212;
+        }
+
+        .stats {
+            display: flex;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .stat-item h3 {
+            font-size: 1.8rem;
+            color: var(--dark);
+        }
+
+        /* ================= COMPARE FARE STRUCTURED ================= */
+        #compare {
+            padding: 40px 8%;
+            position: relative;
+            margin-top: -80px;
+        }
+
+        .location-box {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .location-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--cream);
+            border-radius: 15px;
+        }
+
+        .location-row input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--dark);
+            outline: none;
+        }
+
+        .location-row button {
+            padding: 16px 30px;
+            background: var(--dark);
+            color: var(--white);
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .location-row button:hover {
+            opacity: 0.9;
+        }
+
+        .cards {
+            margin-top: 40px;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .card-fare {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s ease;
+        }
+
+        .card-fare:hover {
+            transform: translateY(-5px);
+            border-color: var(--lime);
+        }
+
+        .card-fare h3 {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .price {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .card-fare img {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 120px;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .price-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: none;
+        }
+
+        .badge-low {
+            background: #22c55e;
+            color: #fff;
+            display: block;
+        }
+
+        .badge-high {
+            background: #ef4444;
+            color: #fff;
+            display: block;
+        }
+
+        .book-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            color: var(--lime);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .book-link:hover {
+            color: #FFB53E;
+        }
+
+        /* Services, Impact, etc */
+        .mission {
+            text-align: center;
+            padding: 100px 15%;
+        }
+
+        .mission h2 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        .services {
+            padding: 80px 8%;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 0;
+            border-top: 1px solid var(--border);
+            border-left: 1px solid var(--border);
+            overflow: hidden;
+            background: var(--card-bg);
+        }
+
+        .service-card {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            padding: 32px 24px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--lime);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-card:hover {
+            background: rgba(255, 198, 38, 0.02);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        .service-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 198, 38, 0.08);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .service-icon-box i {
+            font-size: 1.2rem;
+            color: var(--lime);
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover .service-icon-box {
+            background: var(--lime);
+        }
+
+        .service-card:hover .service-icon-box i {
+            color: #121212;
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-card h4 {
+            font-family: var(--font-sans);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .service-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* --- Updated Social Impact Track Styles --- */
+        .impact {
+            padding: 0;
+            height: 400vh; /* Dictates duration of track scroll window */
+            position: relative;
+        }
+
+        .impact-sticky-box {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 8%;
+            overflow: hidden;
+        }
+
+        .impact-grid {
+            display: flex; /* Horizontal flex container layout row track */
+            gap: 30px;
+            width: max-content;
+            will-change: transform;
+        }
+
+        .impact-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            width: 320px; /* Fixed sizing metric */
+            flex-shrink: 0;
+        }
+
+        .impact-img {
+            height: 180px;
+            background: #eee;
+        }
+
+        /* Flex wrap centering for the embedded animation element */
+        .impact-animation-container {
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+        }
+
+        .impact-content {
+            padding: 20px;
+            border-top: 1px solid var(--lime);
+            border-radius: 30px;
+        }
+
+        /* --- NEXT-LEVEL SDG Section Styles --- */
+        .sdg-section {
+            padding: 90px 8%;
+            background: var(--white);
+            position: relative;
+        }
+
+        .sdg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-top: 50px;
+        }
+
+        .sdg-card {
+            padding: 35px 25px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s, box-shadow 0.4s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .sdg-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 198, 38, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .sdg-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--lime);
+            box-shadow: 0 12px 30px rgba(255, 198, 38, 0.1);
+        }
+
+        .sdg-card:hover::after {
+            opacity: 1;
+        }
+
+        .sdg-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            background: rgba(255, 198, 38, 0.12);
+            color: var(--dark);
+            border-radius: 50px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 198, 38, 0.2);
+        }
+
+        [data-theme="dark"] .sdg-badge {
+            color: var(--lime);
+        }
+
+        .sdg-card i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--lime);
+            display: block;
+            transform-origin: center center;
+        }
+
+        .sdg-card h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .sdg-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* --- MICRO INTERACTIVE ANIMATIONS (CLAUDE-STYLE) --- */
+        .sdg-card:hover i.fa-scale-balanced,
+        .sdg-card.animate i.fa-scale-balanced {
+            animation: claudeScale 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .sdg-card:hover i.fa-city,
+        .sdg-card.animate i.fa-city {
+            animation: claudeCity 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .sdg-card:hover i.fa-circle-nodes,
+        .sdg-card.animate i.fa-circle-nodes {
+            animation: claudeNodes 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .sdg-card:hover i.fa-leaf,
+        .sdg-card.animate i.fa-leaf {
+            animation: claudeLuggage 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        @keyframes claudeScale {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-7deg); }
+            65% { transform: rotate(6deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes claudeCity {
+            0% { transform: scale(1); }
+            30% { transform: scaleY(0.82) translateY(2px); }
+            60% { transform: scaleY(1.12) translateY(-3px); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes claudeNodes {
+            0% { transform: rotateZ(0deg); }
+            40% { transform: rotateZ(360deg); }
+            100% { transform: rotateZ(0deg); }
+        }
+
+        @keyframes claudeLuggage {
+            0% { transform: translateX(0); }
+            30% { transform: translateX(-4px) rotate(-3deg); }
+            65% { transform: translateX(6px) rotate(3deg); }
+            100% { transform: translateX(0); }
+        }
+
+        /* FAQ Section Styles */
+        .faq-section {
+            padding: 80px 8%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .faq-section h3 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+
+        .faq-item {
+            margin-bottom: 15px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .faq-item summary {
+            padding: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .faq-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .faq-item summary::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .faq-item[open] summary::after {
+            transform: rotate(180deg);
+        }
+
+        .faq-content {
+            padding: 0 20px 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* --- BRAND NEW PREMIUM SOLID BLACK FOOTER CODE --- */
+        .custom-footer {
+            background: #02050c;
+            padding: 80px 8% 40px 8%;
+            position: relative;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.01);
+            transition: background 0.3s;
+        }
+
+        body.light-mode .custom-footer {
+            background: #0b1322;
+        }
+
+        .footer-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-main {
+            display: grid;
+            grid-template-columns: 2fr repeat(4, 1fr);
+            gap: 40px;
+            padding-bottom: 60px;
+        }
+
+        .footer-info-col {
+            padding-right: 40px;
+        }
+
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 18px;
+            }
+
+        .footer-desc {
+            color: #6d798e;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 280px;
+        }
+
+        body.light-mode .footer-desc {
+            color: #94a3b8;
+        }
+
+        .footer-links-col h4 {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .footer-links-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links-col ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links-col ul li a {
+            color: #6d798e;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+
+        body.light-mode .footer-links-col ul li a {
+            color: #94a3b8;
+        }
+
+        .footer-links-col ul li a:hover {
+            color: var(--lime);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #525d70;
+            font-size: 13px;
+        }
+
+        body.light-mode .footer-bottom {
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+        }
+
+        .footer-meta-right a {
+            color: #525d70;
+            text-decoration: none;
+            margin-left: 4px;
+            transition: color 0.2s ease;
+        }
+
+        body.light-mode .footer-meta-right a {
+            color: #94a3b8;
+        }
+
+        .footer-meta-right a:hover {
+            color: #ffffff;
+        }
+
+        /* Giant Subtle Background Typography Graphic */
+        .footer-giant-text {
+            font-size: clamp(80px, 15vw, 210px);
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: -0.04em;
+            line-height: 0.8;
+            margin-top: 40px;
+            user-select: none;
+            pointer-events: none;
+            background: linear-gradient(to bottom, var(--lime) 10%, #836617 50%, transparent 98%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-wrapper {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 40px;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .location-box {
+                padding: 20px;
+            }
+
+            .location-row {
+                flex-direction: column;
+            }
+
+            .input-group,
+            .location-row button {
+                width: 100%;
+            }
+
+            .impact {
+                height: auto !important; /* Disables sticky track adjustments inside small compact spaces */
+            }
+            .impact-sticky-box {
+                position: relative !important;
+                height: auto !important;
+                padding: 40px 4%;
+                overflow-x: auto !important;
+            }
+            .impact-grid {
+                width: auto;
+            }
+        }
+
+        /* --- NEW: Floating Message Icon --- */
+        .floating-chat {
+            position: fixed;
+            bottom: 60px;
+            right: 70px;
+            width: 50px;
+            height: 50px;
+            background: var(--lime);
+            color: #121212;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 2001;
+            animation: bounce 2s infinite ease-in-out;
+            transition: transform 0.3s;
+        }
+
+        .floating-chat:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* --- STABLE SCALE-BASED TRANSITION WRAPPER --- */
+        .transition-wrapper {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            width: calc(100vw - var(--sidebar-width));
+            height: 100vh;
+            z-index: 1500;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .theme-ball {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: var(--lime);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0);
+        }
+
+        /* Distinct states to prevent thread blockages */
+        .theme-ball.grow {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(120);
+            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.1s ease;
+        }
+
+        .theme-ball.shrink {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        @media (max-width: 768px) {
+            .transition-wrapper {
+                left: 0;
+                width: 100vw;
+            }
+        }
+
+        /* --- PAGE LOADER OVERLAY STYLE --- */
+        #pageLoader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #0c0c0d;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            opacity: 1;
+            visibility: visible;
+            gap: 0px;
+        }
+
+        #pageLoader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Fixed color filter: Converts the dark graphic elements into fine golden-amber #FFC626 */
+        #pageLoader dotlottie-wc {
+            position: relative;
+            z-index: 10000;
+            filter: invert(83%) sepia(52%) saturate(1450%) hue-rotate(326deg) brightness(102%) contrast(101%);
+        }
+
+        /* Styling for the new text under animation */
+        .loader-text {
+            color: #FFB53E;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-top: -80px;
+            margin-left: 20px;
+            text-transform: uppercase;
+            z-index: 10000;
+        }
+
+        /* Custom alignment for the impact card Lottie elements */
+        .impact-animation-container dotlottie-wc {
+            width: 100%;
+            height: 100%;
+            max-height: 180px;
+        }
+    </style>
+</head>
+
+<body data-theme="dark">
+
+    <div class="transition-wrapper">
+        <div class="theme-ball" id="theme-ball"></div>
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-top-icons">
+            <a href="#hero-section" class="side-icon active">
+                <i class="fa-solid fa-house"></i>
+                <span class="sidebar-label">Home</span>
+            </a>
+            <a href="#compare" class="side-icon">
+                <i class="fa-solid fa-car"></i>
+                <span class="sidebar-label">Rides</span>
+            </a>
+            <a href="#services" class="side-icon">
+                <i class="fa-solid fa-box"></i>
+                <span class="sidebar-label">Freight</span>
+            </a>
+            <a href="#services-section" class="side-icon">
+                <i class="fa-solid fa-server"></i>
+                <span class="sidebar-label">Service</span>
+            </a>
+            <a href="#impact-section" class="side-icon">
+                <i class="fa-solid fa-newspaper"></i>
+                <span class="sidebar-label">News</span>
+            </a>
+            <a href="#sdg-section" class="side-icon">
+                <i class="fa-solid fa-leaf"></i>
+                <span class="sidebar-label">SDGs</span>
+            </a>
+            <a href="#faq-section" class="side-icon">
+                <i class="fa-solid fa-circle-question"></i>
+                <span class="sidebar-label">FAQ</span>
+            </a>
+        </div>
+        <div class="sidebar-bottom-icons">
+            <div class="side-icon" id="theme-toggle">
+                <i class="fa-solid fa-circle-half-stroke"></i>
+                <span class="sidebar-label">Theme</span>
+            </div>
+            <a href="#custom-footer" class="side-icon">
+                <i class="fa-solid fa-circle-user"></i>
+                <span class="sidebar-label">Profile</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <nav>
+            <div class="logo"><span>"</span>OpenFare<span>"</span></div>
+            <button class="btn-app"><a href="signup.html" target="_blank">Signup</a></button>
+        </nav>
+
+        <section class="hero" id="hero-section">
+            <div class="hero-text">
+                <h1>We Make Travel <br><span class="highlight">Fairer & Smarter.</span></h1>
+                <p>Our AI-powered platform compares ride fares in real time, helping you choose the most cost-effective,
+                    transparent, and intelligent way to travel—every single time.</p>
+                <button class="btn-app" style="padding: 18px 40px;"><a href="signup.html" target="_blank">Download the app</a></button>
+                <div class="stats">
+                    <div class="stat-item">
+                        <h3>1000+</h3>
+                        <p>Cities</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>45+</h3>
+                        <p>Countries</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>237M+</h3>
+                        <p>Downloads</p>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="blob-main"></div>
+                <img src="car1.png" alt="Driver">
+            </div>
+        </section>
+
+        <section id="compare">
+            <div class="location-box">
+                <div class="location-row">
+                    <div class="input-group">
+                        <i class="fa-solid fa-circle-notch" style="color: #FFC626;"></i>
+                        <input type="text" placeholder="Pickup location" id="pickup">
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-location-arrow" style="color: #FFC626;"></i>
+                        <input type="text" placeholder="Drop location" id="drop">
+                    </div>
+                    <button onclick="showFares()">
+                        <i class="fa-solid fa-magnifying-glass" style="margin-right: 8px;"></i> Compare Now
+                    </button>
+                </div>
+
+                <div class="cards" id="cards">
+                    <div class="card-fare" id="card-ola"><span class="price-badge"></span>
+                        <h3>Ola</h3>
+                        <div class="price">₹ <span id="ola"></span></div><a href="https://v.ola.app/reserve-ride"
+                            target="_blank" class="book-link">Visit Site <i class="fa-solid fa-arrow-right-long"></i></a><img
+                            src="car1.png">
+                    </div>
+                    <div class="card-fare" id="card-uber"><span class="price-badge"></span>
+                        <h3>Uber</h3>
+                        <div class="price">₹ <span id="uber"></span></div><a href="https://m.uber.com" target="_blank"
+                            class="book-link">Visit Site <i class="fa-solid fa-arrow-right-long"></i></a><img src="uber.png">
+                    </div>
+                    <div class="card-fare" id="card-indrive"><span class="price-badge"></span>
+                        <h3>inDrive</h3>
+                        <div class="price">₹ <span id="indrive"></span></div><a href="https://indrive.com"
+                            target="_blank" class="book-link">Visit Site <i class="fa-solid fa-arrow-right-long"></i></a><img
+                            src="indrive.png">
+                    </div>
+                    <div class="card-fare" id="card-rapido"><span class="price-badge"></span>
+                        <h3>Rapido</h3>
+                        <div class="price">₹ <span id="rapido"></span></div><a href="https://www.rapido.bike"
+                            target="_blank" class="book-link">Visit Site <i class="fa-solid fa-arrow-right-long"></i></a><img
+                            src="rapido.png">
+                    </div>
+                    <div class="card-fare" id="card-yatri"><span class="price-badge"></span>
+                        <h3>YatriSathi</h3>
+                        <div class="price">₹ <span id="yatri"></span></div><a href="https://yatrisathi.com"
+                            target="_blank" class="book-link">Visit Site <i class="fa-solid fa-arrow-right-long"></i></a><img
+                            src="yatrisathi.png">
+                    </div>
+                    <div class="card-fare" id="card-zust"><span class="price-badge"></span>
+                        <h3>Zust Go</h3>
+                        <div class="price">₹ <span id="zust"></span></div><a href="#" class="book-link">Visit Site <i class="fa-solid fa-arrow-right-long"></i></a><img
+                    <i class="fa-solid fa-arrow-right-long"></i></a><img src="zustgo.png">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mission" id="services">
+            <h2>Challenging fare inequality to <span class="highlight">empower millions of daily riders</span> and make
+                travel fairer.</h2>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <img src="mission1.png" alt="Mission" style="width:100%; border-radius:20px;">
+            </div>
+        </section>
+
+        <section class="services reveal" id="services-section">
+            <div class="section-header" style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                <h3>Our <span class="highlight">Services</span></h3>
+                <p style="cursor: pointer; color: var(--text-muted);">See more →</p>
+            </div>
+            <div class="service-grid">
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-city"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>City Rides</h4>
+                        <div class="service-meta">
+                            OpenFare | Local <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Offer your price and find your driver in a click for local routes.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-road"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>City to City</h4>
+                        <div class="service-meta">
+                            OpenFare | Intercity <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Reliable intercity rides at the price you suggest, hassle-free.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-charging-station"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>EV Charging</h4>
+                        <div class="service-meta">
+                            OpenFare | Green Hub <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Find green electric vehicle charging stations nearby in real time.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-truck-moving"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>Freight Delivery</h4>
+                        <div class="service-meta">
+                            OpenFare | Logistics <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Fast cargo transportation for businesses and individuals.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>Couriers & Parcels</h4>
+                        <div class="service-meta">
+                            OpenFare | Delivery <i class="fa-solid fa-circle-check; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Same-day secure parcel and document delivery inside the city.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-plane-departure"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>Airport Transfers</h4>
+                        <div class="service-meta">
+                            OpenFare | Airport <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Pre-booked reliable rides to and from terminal hubs with fixed pricing.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>Premium Mobility</h4>
+                        <div class="service-meta">
+                            OpenFare | VIP Class <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Travel in premium style with high-end luxury vehicle options.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-motorcycle"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>Bike & Moto Taxis</h4>
+                        <div class="service-meta">
+                            OpenFare | Fast Track <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Beat traffic bottlenecks with quick and affordable two-wheeler options.</p>
+                    </div>
+                </div>
+                <div class="service-card reveal-stagger">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="service-info">
+                        <h4>Route Analytics</h4>
+                        <div class="service-meta">
+                            OpenFare | Smart AI <i class="fa-solid fa-circle-check" style="color: #3b82f6; font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                        <p>Real-time analytics of route fares and traffic bottlenecks.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pure JS Dynamic Sticky Track Layout Alignment Configuration -->
+        <section class="impact" id="impact-section">
+            <div class="impact-sticky-box">
+                <div class="section-header" style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                    <h3><span class="highlight">Social Impact</span> making a difference.</h3>
+                    <button class="btn-app" style="background: var(--white); border: 1px solid var(--border);">Learn
+                        More</button>
+                </div>
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <div class="impact-animation-container">
+                            <dotlottie-wc src="https://lottie.host/7c3da162-702d-4a01-8203-b3dfbee7819a/7BQVOuLIyF.lottie" autoplay loop></dotlottie-wc>
+                        </div>
+                        <div class="impact-content">
+                            <p><strong>A program for orphans...</strong></p><small>Learn more</small>
+                        </div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="impact-animation-container">
+                            <dotlottie-wc src="https://lottie.host/a19bed4e-88ec-4d20-95b1-ca78bd254b22/Z26tQY3A1w.lottie" autoplay loop></dotlottie-wc>
+                        </div>
+                        <div class="impact-content">
+                            <p><strong>Promoting sports education</strong></p><small>Learn more</small>
+                        </div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="impact-animation-container">
+                            <dotlottie-wc src="https://lottie.host/04b422ca-f05e-4035-a5ab-4e0938299428/CQvWlWyTkK.lottie" autoplay loop></dotlottie-wc>
+                        </div>
+                        <div class="impact-content">
+                            <p><strong>A prize for women founders</strong></p><small>Learn more</small>
+                        </div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="impact-animation-container">
+                            <dotlottie-wc src="https://lottie.host/7c3da162-702d-4a01-8203-b3dfbee7819a/7BQVOuLIyF.lottie" autoplay loop></dotlottie-wc>
+                        </div>
+                        <div class="impact-content">
+                            <p><strong>A program for orphans...</strong></p><small>Learn more</small>
+                        </div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="impact-animation-container">
+                            <dotlottie-wc src="https://lottie.host/a19bed4e-88ec-4d20-95b1-ca78bd254b22/Z26tQY3A1w.lottie" autoplay loop></dotlottie-wc>
+                        </div>
+                        <div class="impact-content">
+                            <p><strong>Promoting sports education</strong></p><small>Learn more</small>
+                        </div>
+                    </div>
+                    <div class="impact-card">
+                        <div class="impact-animation-container">
+                            <dotlottie-wc src="https://lottie.host/04b422ca-f05e-4035-a5ab-4e0938299428/CQvWlWyTkK.lottie" autoplay loop></dotlottie-wc>
+                        </div>
+                        <div class="impact-content">
+                            <p><strong>A prize for women founders</strong></p><small>Learn more</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="sdg-section" id="sdg-section">
+            <div class="section-header">
+                <h3>Our Contribution to <span class="highlight">SDGs</span></h3>
+                <p style="color: var(--text-muted); margin-top: 10px;">Aligning transparent price aggregation with Global Goals.</p>
+            </div>
+            <div class="sdg-grid">
+                <div class="sdg-card">
+                    <span class="sdg-badge">Goal 10</span>
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <h4>Reduced Inequalities</h4>
+                    <p>Protecting passengers from unilateral surge markup cycles and predatory dynamic tariffs via open-market visibility.</p>
+                </div>
+                <div class="sdg-card">
+                    <span class="sdg-badge">Goal 11</span>
+                    <i class="fa-solid fa-city"></i>
+                    <h4>Sustainable Cities</h4>
+                    <p>Streamlining urban transit selection patterns, eliminating duplicate routing loops, and reducing dead-mile emissions.</p>
+                </div>
+                <div class="sdg-card">
+                    <span class="sdg-badge">Goal 9</span>
+                    <i class="fa-solid fa-circle-nodes"></i>
+                    <h4>Industry & Innovation</h4>
+                    <p>Fostering resilient smart infrastructure architectures through multi-platform real-time analytical fare matching models.</p>
+                </div>
+                <div class="sdg-card">
+                    <span class="sdg-badge">Goal 12</span>
+                    <i class="fa-solid fa-leaf"></i>
+                    <h4>Responsible Consumption</h4>
+                    <p>Empowering daily commuters with comparative data logs to enable optimal, cost-efficient resource allocations.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq-section" id="faq-section">
+            <h3>Frequently Asked <span class="highlight">Questions</span></h3>
+
+            <details class="faq-item">
+                <summary>How do I compare ride fares?</summary>
+                <div class="faq-content">
+                    Enter your pickup and drop locations in the comparison box above and click "Compare Now". We'll
+                    instantly fetch the estimated fares from top services like Ola, Uber, and inDrive.
+                </div>
+            </details>
+
+            <details class="faq-item">
+                <summary>Is the pricing real-time?</summary>
+                <div class="faq-content">
+                    Yes, our comparison tool simulates real-time price fetching to ensure you always find the best value
+                    for your specific route.
+                </div>
+            </details>
+
+            <details class="faq-item">
+                <summary>What makes inDrive different?</summary>
+                <div class="faq-content">
+                    Unlike other apps, inDrive allows passengers to suggest their own price for a ride, which drivers
+                    can then accept or counter-offer, making the process transparent and fair.
+                </div>
+            </details>
+
+            <details class="faq-item">
+                <summary>Are these services eco-friendly?</summary>
+                <div class="faq-content">
+                    We prioritize sustainability! Many of our partner services now offer EV (Electric Vehicle) options
+                    and we provide information on nearby charging stations.
+                </div>
+            </details>
+        </section>
+
+        <footer class="custom-footer" id="custom-footer">
+            <div class="footer-container">
+                <div class="footer-main">
+
+                    <div class="footer-info-col">
+                        <div class="footer-logo">OpenFare</div>
+                        <p class="footer-desc">An intelligent data automation system specializing in automated cleanup,
+                            normalization, and feature extraction.</p>
+                    </div>
+
+                    <div class="footer-links-col">
+                        <h4>Quick link</h4>
+                        <ul>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">About us</a></li>
+                            <li><a href="#">Contact us</a></li>
+                            <li><a href="#">License</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-links-col">
+                        <h4>Company</h4>
+                        <ul>
+                            <li><a href="#">Service</a></li>
+                            <li><a href="#">Service details</a></li>
+                            <li><a href="#">Project</a></li>
+                            <li><a href="#">Project details</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-links-col">
+                        <h4>Others</h4>
+                        <ul>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Blog details</a></li>
+                            <li><a href="#">404</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-links-col">
+                        <h4>Social</h4>
+                        <ul>
+                            <li><a href="#">Facebook</a></li>
+                            <li><a href="#">LinkedIn</a></li>
+                            <li><a href="#">Instagram</a></li>
+                            <li><a href="#">Twitter</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <div class="footer-bottom">
+                    <div class="footer-meta-left">
+                        &copy; 2026 OpenFare. All rights reserved.
+                    </div>
+                    <div class="footer-meta-right">
+                        Design by Oporajita — Powered by <a href="#">OpenFare Team</a>
+                    </div>
+                </div>
+
+                <div class="footer-giant-text">"OpenFare"</div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="floating-chat">
+        <i class="fa-solid fa-comment-dots"></i>
+    </div>
+
+    <div id="pageLoader">
+        <dotlottie-wc src="https://lottie.host/4b1dc2e8-6a29-48ac-8660-35d6ce40c425/HnPZ1FxcU2.lottie"
+            style="width: 300px; height: 300px;" autoplay loop playMode="bounce"></dotlottie-wc>
+        <div class="loader-text">Excellence Takes a Moment...</div>
+    </div>
+
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js" type="module"></script>
+
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const ball = document.getElementById('theme-ball');
+
+        toggleBtn.addEventListener('click', () => {
+            if (ball.classList.contains('grow') || ball.classList.contains('shrink')) return;
+
+            // 1. Get exact theme icon position inside viewport layout
+            const rect = toggleBtn.getBoundingClientRect();
+            const btnX = rect.left + rect.width / 2;
+            const btnY = rect.top + rect.height / 2;
+
+            // 2. Adjust for desktop vs mobile sidebar offsets
+            const sidebarWidth = window.innerWidth > 768 ? 80 : 0;
+            const targetX = btnX - sidebarWidth;
+
+            // Set spatial starting point values explicitly before assigning animation classes
+            ball.style.left = `${targetX}px`;
+            ball.style.top = `${btnY}px`;
+
+            // Clear class stack to clean render frames
+            ball.classList.remove('shrink', 'grow');
+
+            // Force layout recalculation frame repaint
+            void ball.offsetWidth;
+
+            // Phase 1: Grow out lime circle
+            ball.classList.add('grow');
+
+            // Phase 2: Flip core themes halfway through scale completion
+            setTimeout(() => {
+                if (document.body.getAttribute('data-theme') === 'dark') {
+                    document.body.removeAttribute('data-theme');
+                    document.body.classList.add('light-mode');
+                } else {
+                    document.body.setAttribute('data-theme', 'dark');
+                    document.body.classList.remove('light-mode');
+                }
+
+                // Switch classes to pull the lime circle back inward
+                ball.classList.remove('grow');
+                ball.classList.add('shrink');
+            }, 800);
+
+            // Phase 3: Cleanup animation class flags once shrinking finishes
+            setTimeout(() => {
+                ball.classList.remove('shrink');
+            }, 1600);
+        });
+
+        // --- NEW: Scroll Spy logic to sync Active/Lime states based on current viewport coordinates ---
+        const sections = document.querySelectorAll("section, footer");
+        const navLinks = document.querySelectorAll(".sidebar-top-icons .side-icon, .sidebar-bottom-icons .side-icon[href]");
+
+        window.addEventListener("scroll", () => {
+            let currentSectionId = "";
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                // Triggers shift slightly before the section hits top layout coordinates
+                if (window.scrollY >= sectionTop - 120) {
+                    currentSectionId = section.getAttribute("id");
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === `#${currentSectionId}`) {
+                    link.classList.add("active");
+                }
+            });
+        });
+
+        // --- NEW: Explicit Click Event logic to handle micro-pulse animations uniquely ---
+        document.querySelectorAll('.side-icon').forEach(link => {
+            link.addEventListener('click', () => {
+                link.classList.remove('clicked');
+                void link.offsetWidth; // Force a DOM repaint sequence layout recalculation
+                link.classList.add('clicked');
+                
+                setTimeout(() => {
+                    link.classList.remove('clicked');
+                }, 1000);
+            });
+        });
+
+        // Generate pseudo-random value safely
+        function r(min, max) { return Math.floor(Math.random() * (max - min) + min); }
+
+        function showFares() {
+            document.getElementById("cards").style.display = "grid";
+            const ids = ["ola", "uber", "indrive", "rapido", "yatri", "zust"];
+            const fareValues = {};
+
+            ids.forEach(id => {
+                const val = r(140, 270);
+                document.getElementById(id).innerText = val;
+                fareValues[id] = val;
+            });
+
+            const values = Object.values(fareValues);
+            const minPrice = Math.min(...values);
+            const maxPrice = Math.max(...values);
+
+            ids.forEach(id => {
+                const card = document.getElementById("card-" + id);
+                const badge = card.querySelector(".price-badge");
+                badge.className = "price-badge";
+
+                if (fareValues[id] === minPrice) {
+                    badge.innerText = "Best Value";
+                    badge.classList.add("badge-low");
+                } else if (fareValues[id] === maxPrice) {
+                    badge.innerText = "Highest";
+                    badge.classList.add("badge-high");
+                } else {
+                    badge.innerText = "";
+                }
+            });
+
+            window.scrollBy({ top: 350, behavior: 'smooth' });
+        }
+
+        // --- SEAMLESS VIEW TRANSITION SYSTEM ---
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('pageLoader');
+            setTimeout(() => {
+                loader.classList.add('hidden');
+            }, 2000); // 2 seconds delay to mimic your signup.html entry feel
+        });
+
+        // --- MICRO ANIMATION TRIGGER ON TAP ---
+        document.querySelectorAll('.sdg-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.remove('animate');
+                void card.offsetWidth; // Force DOM reflow
+                card.classList.add('animate');
+                
+                // Remove class after animation finishes (650ms) to allow re-triggering
+                setTimeout(() => {
+                    card.classList.remove('animate');
+                }, 650);
+            });
+        });
+
+        // --- NEW: Dynamic Pure JS Translation Track for the Social Impact Track ---
+        const impactSection = document.getElementById('impact-section');
+        const impactGrid = document.querySelector('.impact-grid');
+        const stickyContainer = document.querySelector('.impact-sticky-box');
+
+        window.addEventListener('scroll', () => {
+            if (window.innerWidth <= 768 || !impactSection || !impactGrid || !stickyContainer) return;
+
+            const sectionTop = impactSection.offsetTop;
+            const sectionHeight = impactSection.offsetHeight;
+            const scrollY = window.scrollY;
+
+            // Compute metrics while inside the scrolling frame view
+            if (scrollY >= sectionTop && scrollY <= (sectionTop + sectionHeight - window.innerHeight)) {
+                const scrolledDistance = scrollY - sectionTop;
+                const totalVerticalScrollable = sectionHeight - window.innerHeight;
+                
+                // Account for the layout alignment padding (8% on left and right)
+                const paddingOffset = window.innerWidth * 0.16;
+                const maxHorizontalScroll = impactGrid.scrollWidth - stickyContainer.clientWidth + paddingOffset;
+
+                const transformationRatio = scrolledDistance / totalVerticalScrollable;
+                const translateX = transformationRatio * maxHorizontalScroll;
+
+                // Bind upper limit constraints to ensure absolute alignment precision at the end of the scroll window
+                const finalTranslateX = Math.min(translateX, maxHorizontalScroll);
+                impactGrid.style.transform = `translateX(-${finalTranslateX}px)`;
+            } else if (scrollY < sectionTop) {
+                impactGrid.style.transform = `translateX(0px)`;
+            } else {
+                const paddingOffset = window.innerWidth * 0.16;
+                const maxHorizontalScroll = impactGrid.scrollWidth - stickyContainer.clientWidth + paddingOffset;
+                impactGrid.style.transform = `translateX(-${maxHorizontalScroll}px)`;
+            }
+        });
+    </script>
+</body>
+
+</html>
